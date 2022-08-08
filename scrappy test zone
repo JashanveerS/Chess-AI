@@ -1,0 +1,60 @@
+import chess
+import random
+# create board object
+board=chess.Board()
+
+def staticAnalysis(board, move, my_color):
+    score = 0
+    ## Check some things about this move:
+    # score += 10 if board.is_capture(move) else 0
+    # To actually make the move:
+    board.push(move)
+    # Now check some other things:
+    for (piece, value) in [(chess.PAWN, 1), 
+                           (chess.BISHOP, 3), 
+                           (chess.KING, 0), 
+                           (chess.QUEEN, 9), 
+                           (chess.KNIGHT, 3),
+                           (chess.ROOK, 5)]:
+        score += len(board.pieces(piece, my_color)) * value
+        score -= len(board.pieces(piece, not my_color)) * value
+        # can also check things about the pieces position here
+    return score
+
+while board.is_game_over:
+
+    movelist = list(board.legal_moves)
+    max = 0
+    dict = {}
+    for a in movelist:                                                         
+        newboard_1 = board.copy()
+        newboard_1.push(a)                                                      # evaluating legal space with first white move
+        black_move_1 = list(newboard_1.legal_moves)
+        for b in black_move_1:                                                  
+            newboard_2= newboard_1.copy()                                       #evaluating legal moves with first black move
+            newboard_2.push(b)
+            white_move_2 = list(newboard_2.legal_moves)
+        
+            for c in white_move_2:                                              #evaluating legal moves with second white move
+                newboard_3 = newboard_2.copy()
+                newboard_3.push(c)
+                Black_move_2 = list(newboard_3.legal_moves)
+                for d in Black_move_2:
+                    newboard_4 = newboard_3.copy()
+                    temp = staticAnalysis(newboard_3,c,chess.WHITE)
+                    if int(temp) == 0:
+                        zero_data.append([a,b,c])
+                    #print(f"{int(temp)}")
+                    if max<=temp:
+                        move1,move2,move3 = a,b,c
+                        max = temp
+    board.push(move1)                                                              # pushing white's move
+    print(board)
+
+
+
+
+    black_move = input(":")                                                      #First move black
+    board.push_san(black_move)
+    print(board)
+    print('\n\n') 
