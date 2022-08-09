@@ -6,46 +6,63 @@ board=chess.Board()
 
 def staticAnalysis(board, move, my_color):
     score = 0
+    white_score = 0
+    black_score = 0
     ## Check some things about this move:
     # score += 10 if board.is_capture(move) else 0
     # To actually make the move:
     board.push(move)
     # Now check some other things:
     for (piece, value) in [(chess.PAWN, 1), 
-                           (chess.BISHOP, 4), 
-                           (chess.KING, 0), 
-                           (chess.QUEEN, 10), 
-                           (chess.KNIGHT, 5),
+                           (chess.BISHOP, 3), 
+                           (chess.KING, 10), 
+                           (chess.QUEEN, 9), 
+                           (chess.KNIGHT, 3),
                            (chess.ROOK, 5)]:
-        score += len(board.pieces(piece, my_color)) * value
-        score -= len(board.pieces(piece, not my_color)) * value
+        white_score += len(board.pieces(piece, my_color)) * value
+        black_score -= len(board.pieces(piece, not my_color)) * value 
         # can also check things about the pieces position here
-    return score
+    if my_color == chess.WHITE:
+        score = white_score - black_score
+    else :
+        score = black_score - white_score
+    
+    return score, board
+
 
 while board.is_game_over:
     movelist = list(board.legal_moves)
     max = 0
+    score1_max = 0
+    score2_max = 0
     dict = {}
+    
     for a in movelist:
         newboard_1 = board.copy()
-        newboard_1.push(a)
+        temp1, newboard_1 = staticAnalysis(newboard_1,a,chess.WHITE)      #trying alpha-beta pruning to eliminate lower value steps 
+        #newboard_1.push(a)
         black_move_1 = list(newboard_1.legal_moves)
-        temp1 = staticAnalysis(newboard_1,a,chess.WHITE)
-        for b in black_move_1:
-            newboard_2= newboard_1.copy()
-            newboard_2.push(b)
-            white_move_2 = list(newboard_2.legal_moves)
-            temp2 = staticAnalysis(newboard_2,b,chess.WHITE)
-            if temp2 < temp1:
-                break
-            for c in white_move_2:
-                newboard_3 = newboard_2.copy()
-                temp3 = staticAnalysis(newboard_3,c,chess.WHITE)
+        
+        if score1_max <= temp1:
+            score1_max = temp1
+            for b in black_move_1:
+                newboard_2= newboard_1.copy()
+                temp2, newboard_2 = staticAnalysis(newboard_2,b,chess.WHITE)
+                #newboard_2.push(b)
+                white_move_2 = list(newboard_2.legal_moves)
+                if temp2 >= score2_max:
+                    score2_max = temp2
+                    for c in white_move_2:
+                        newboard_3 = newboard_2.copy()
+                        temp3, newboard_3 = staticAnalysis(newboard_3,c,chess.WHITE)
+                        
 
-                if max<=temp3:
-                    move1,move2,move3 = a,b,c
-                    max = temp3
-                dict[max] = [move1,temp1,move2,temp2,move3]
+
+
+                    if max<=temp3:
+                        move1,move2,move3 = a,b,c
+                        max = temp3
+                    #dict[max] = [move1,temp1,move2,temp2,move3]
     print(dict)
     board.push(move1)
     print(board)
